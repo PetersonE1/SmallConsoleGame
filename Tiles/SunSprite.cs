@@ -5,6 +5,7 @@ namespace SmallConsoleGame.Tiles;
 public class SunSprite : IEnemy
 {
     public char Char => '☼';
+    public string Name => "Sun Sprite";
     public bool IsObstacle => false;
     public int Range => 5;
     public int Damage => 2;

@@ -74,6 +74,16 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		return ValidateMap();
 	}
 
+	public bool PlacePlayer(int x, int y)
+	{
+		ITile tile = _referenceMap[_grid[x, y]];
+		if (tile.IsObstacle || tile is IEnemy)
+			return false;
+		
+		_grid[x, y] = GetPlayer();
+		return true;
+	}
+
 	private (int x, int y) GetEmptySpace()
 	{
 		int x = RandomNumberGenerator.GetInt32(width);
