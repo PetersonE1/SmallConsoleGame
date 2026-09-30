@@ -1,4 +1,4 @@
-namespace SmallConsoleGame;
+namespace SmallConsoleGame.TileTypes;
 
 public interface ITile
 {

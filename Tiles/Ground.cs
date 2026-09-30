@@ -1,3 +1,5 @@
+using SmallConsoleGame.TileTypes;
+
 namespace SmallConsoleGame.Tiles;
 
 public class Ground : ITile
