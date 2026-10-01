@@ -209,9 +209,9 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		return hit;
 	}
 
-	public bool CanAttackOtherwiseStepTowardPlayer<T>(ActiveEntity<T> enemy, out Point movedTo) where T : IEnemy
+	public bool CanAttackOtherwiseStepTowardPlayer<T>(ActiveEntity<T> enemy, out string movedTo) where T : IEnemy
 	{
-		movedTo = new Point();
+		movedTo = "Error";
 		if (Player is null) return false;
 		PathFinderOptions options = new()
 		{
@@ -238,12 +238,16 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		if (path.Length < 2) return false;
 		
 		Point nextStep = path[1];
-		if (_grid[nextStep.X, nextStep.Y] != GetGround()) return false;
+		if (_grid[nextStep.X, nextStep.Y] != GetGround())
+		{
+			movedTo = "... blocked! Couldn't move.";
+			return false;
+		}
 		
 		_grid[nextStep.X, nextStep.Y] = enemy.ReferenceId;
 		_grid[enemy.Position.X, enemy.Position.Y] = GetGround();
 		enemy.Position = nextStep;
-		movedTo = enemy.Position;
+		movedTo = enemy.Position.ToString();
 		return false;
 	}
 

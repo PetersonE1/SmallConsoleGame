@@ -25,7 +25,7 @@ public static class InfoTools
         sb.AppendLine("Enemies chase using the A* pathfinding algorithm.");
         sb.AppendLine(
             "Defeating a goblin will reward you one arrow. Defeating a sun sprite will increase your health by one.");
-        sb.AppendLine("Goblins have a range of 1 and deal 1 damage. Sun sprites have a range of 5 and deal 2 damage.");
+        sb.AppendLine("Goblins have a range of 1 and deal 1 damage. Sun sprites have a range of 5 and deal 2 damage, firing past other enemies.");
         sb.AppendLine(
             "To get started, use the CreateGameMap tool to create a new map (re)starting the game.");
         return sb.ToString();

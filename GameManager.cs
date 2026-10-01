@@ -45,7 +45,7 @@ public class GameManager
         StringBuilder sb = new();
         foreach (ActiveEntity<Goblin> goblin in _map.Goblins)
         {
-            if (_map.CanAttackOtherwiseStepTowardPlayer(goblin, out Point movedTo))
+            if (_map.CanAttackOtherwiseStepTowardPlayer(goblin, out string movedTo))
             {
                 _map.Player.Tile.Damage(goblin.Tile.Damage);
                 sb.AppendLine($"{goblin.Tile.Name} dealt {goblin.Tile.Damage} damage!");
@@ -59,7 +59,7 @@ public class GameManager
 
         foreach (ActiveEntity<SunSprite> sprite in _map.Sprites)
         {
-            if (_map.CanAttackOtherwiseStepTowardPlayer(sprite, out Point movedTo))
+            if (_map.CanAttackOtherwiseStepTowardPlayer(sprite, out string movedTo))
             {
                 _map.Player.Tile.Damage(sprite.Tile.Damage);
                 sb.AppendLine($"{sprite.Tile.Name} dealt {sprite.Tile.Damage} damage!");
