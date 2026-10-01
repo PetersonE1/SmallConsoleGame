@@ -2,8 +2,11 @@ using System.Drawing;
 using System.Security.Cryptography;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using AStar;
 using AStar.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmallConsoleGame.Tiles;
 using SmallConsoleGame.TileTypes;
 
@@ -31,6 +34,31 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 			sb.AppendLine();
 		}
 		return sb.ToString();
+	}
+
+	public string RawMap()
+	{
+		JObject map = new JObject();
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				ITile tile = _referenceMap[_grid[x, y]];
+				switch (tile)
+				{
+					case IEnemy enemy:
+						map.Add($"({x},{y})", JObject.FromObject(enemy));
+						break;
+					case Player player:
+						map.Add($"({x},{y})", JObject.FromObject(player));
+						break;
+					default:
+						map.Add($"({x},{y})", JObject.FromObject(tile));
+						break;
+				}
+			}
+		}
+		return map.ToString();
 	}
 
 	public Map(int width, int height, int rockCount, int goblinCount, int spriteCount, int maxGenerationAttempts = 10)
@@ -89,16 +117,29 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		return ValidateMap();
 	}
 
-	public bool PlacePlayer(int x, int y)
+	public bool PlacePlayer(int x, int y, out string result)
 	{
-		if (x < 0 || x >= width || y < 0 || y >= height) return false;
+		if (Player is not null)
+		{
+			result = "Player already exists.";
+			return false;
+		}
+		if (x < 0 || x >= width || y < 0 || y >= height)
+		{
+			result = "Can't place player out of bounds.";
+			return false;
+		}
 		ITile tile = _referenceMap[_grid[x, y]];
 		if (tile.IsObstacle || tile is IEnemy)
+		{
+			result = $"Tile is occupied by {tile.Name}";
 			return false;
+		}
 
 		int id = GetPlayer();
 		_grid[x, y] = id;
 		Player = new ActiveEntity<Player>((_referenceMap[id] as Player)!, id, x, y);
+		result = "Successfully placed player.";
 		return true;
 	}
 

@@ -1,4 +1,6 @@
-﻿using ModelContextProtocol.Server;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ModelContextProtocol.Server;
 
 namespace SmallConsoleGame;
 
@@ -48,9 +50,9 @@ public static class Program
 			Console.Write("Choose an (x, y) coordinate pair to place your character, separated by a space: ");
 			int[] coords = Console.ReadLine()?.Split(' ').Select(int.Parse).ToArray() ?? [];
 
-			while (!Manager.PlacePlayer(coords[0], coords[1]))
+			while (!Manager.PlacePlayer(coords[0], coords[1], out string result))
 			{
-				Console.Write("Invalid placement, choose again: ");
+				Console.Write($"{result}, choose again: ");
 				coords = Console.ReadLine()?.Split(' ').Select(int.Parse).ToArray() ?? [];
 			}
 			
@@ -64,8 +66,9 @@ public static class Program
 				int choice = int.Parse(Console.ReadLine() ?? "");
 				if (choice == 1)
 				{
-					Manager.Wait();
+					Console.WriteLine(Manager.Wait());
 					Console.WriteLine(Manager.PrintMap());
+					if (Manager.PlayerDead) break;
 					continue;
 				}
 				Console.WriteLine("Choose a direction:");
@@ -98,17 +101,27 @@ public static class Program
 
 	private static void McpPlayer()
 	{
+		HostApplicationBuilder builder = Host.CreateEmptyApplicationBuilder(settings: null);
+
+		builder.Services.AddMcpServer()
+			.WithStdioServerTransport()
+			.WithToolsFromAssembly();
 		
+		builder.Services.AddSingleton(Manager);
+		
+		IHost app = builder.Build();
+		app.Run();
 	}
 
 	private static void BasicTestRun()
 	{
 		Manager.CreateNewMap(5, 5, 3, 2, 1);
 		Console.WriteLine(Manager.PrintMap());
-		Console.WriteLine("Placing player at (0, 0)... " + (Manager.PlacePlayer(0, 0) ? "Success" : "Failed"));
+		Console.WriteLine("Placing player at (0, 0)... " + (Manager.PlacePlayer(0, 0, out string result) ? "Success" : "Failed"));
 		Console.WriteLine(Manager.PrintMap());
 		Console.WriteLine(Manager.PrintLegend());
 		Console.WriteLine(Manager.Step());
 		Console.WriteLine(Manager.PrintMap());
+		Console.WriteLine(Manager.RawMap());
 	}
 }

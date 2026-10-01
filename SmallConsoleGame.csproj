@@ -9,7 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="AStarLite" Version="1.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="modelcontextprotocol" Version="0.4.0-preview.3" />
     <PackageReference Include="ModelContextProtocol.Core" Version="0.4.0-preview.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

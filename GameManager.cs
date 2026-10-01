@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Drawing;
 using System.Text;
+using System.Text.Json;
 using SmallConsoleGame.Tiles;
 using SmallConsoleGame.TileTypes;
 
@@ -20,8 +21,13 @@ public class GameManager
     }
 
     public string PrintMap() => _map?.PrintMap() ?? "";
+    public string RawMap() => _map?.RawMap() ?? "";
 
-    public bool PlacePlayer(int x, int y) => _map?.PlacePlayer(x, y) ?? false;
+    public bool PlacePlayer(int x, int y, out string result)
+    {
+        result = "Error";
+        return _map?.PlacePlayer(x, y, out result) ?? false;
+    }
 
     public string PrintLegend()
     {
