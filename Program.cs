@@ -63,6 +63,7 @@ public static class Program
 				if (choice == 1)
 				{
 					Manager.Wait();
+					Manager.PrintMap();
 					continue;
 				}
 				Console.WriteLine("Choose a direction:");
