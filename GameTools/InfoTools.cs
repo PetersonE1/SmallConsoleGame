@@ -25,26 +25,24 @@ public static class InfoTools
         sb.AppendLine("Enemies chase using the A* pathfinding algorithm.");
         sb.AppendLine(
             "Defeating a goblin will reward you one arrow. Defeating a sun sprite will increase your health by one.");
+        sb.AppendLine("Goblins have a range of 1 and deal 1 damage. Sun sprites have a range of 5 and deal 2 damage.");
         sb.AppendLine(
             "To get started, use the CreateGameMap tool to create a new map (re)starting the game.");
         return sb.ToString();
     }
     
     [McpServerTool, Description("Get the game map.")]
-    public static async Task<string> GetMap(GameManager manager)
-    {
-        return manager.PrintMap();
-    }
+    public static async Task<string> GetMap(GameManager manager) => manager.PrintMap();
     
     [McpServerTool, Description("Get the game map as raw data.")]
-    public static async Task<string> GetRawData(GameManager manager)
-    {
-        return manager.RawMap();
-    }
+    public static async Task<string> GetRawData(GameManager manager) => manager.RawMap();
 
     [McpServerTool, Description("Get the legend.")]
-    public static async Task<string> GetLegend(GameManager manager)
-    {
-        return manager.PrintLegend();
-    }
+    public static async Task<string> GetLegend(GameManager manager) => manager.PrintLegend();
+
+    [McpServerTool, Description("Get your current health (0 if not in play).")]
+    public static async Task<int> GetHealth(GameManager manager) => manager.GetHealth();
+    
+    [McpServerTool, Description("Get your current arrow count (0 if not in play).")]
+    public static async Task<int> GetArrowCount(GameManager manager) => manager.GetArrowCount();
 }

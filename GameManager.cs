@@ -43,20 +43,32 @@ public class GameManager
         if (_map is null) return "No active map";
         if (_map.Player is null) return "No active player";
         StringBuilder sb = new();
-        foreach (ActiveEntity<Goblin> goblin in _map.Goblins.Where(goblin =>
-                     _map.CanAttackOtherwiseStepTowardPlayer(goblin)))
+        foreach (ActiveEntity<Goblin> goblin in _map.Goblins)
         {
-            _map.Player.Tile.Damage(goblin.Tile.Damage);
-            sb.AppendLine($"{goblin.Tile.Name} dealt {goblin.Tile.Damage} damage!");
-            sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");
+            if (_map.CanAttackOtherwiseStepTowardPlayer(goblin, out Point movedTo))
+            {
+                _map.Player.Tile.Damage(goblin.Tile.Damage);
+                sb.AppendLine($"{goblin.Tile.Name} dealt {goblin.Tile.Damage} damage!");
+                sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");
+            }
+            else
+            {
+                sb.AppendLine($"{goblin.Tile.Name} moved to {movedTo}.");
+            }
         }
 
-        foreach (ActiveEntity<SunSprite> sprite in _map.Sprites.Where(sprite =>
-                     _map.CanAttackOtherwiseStepTowardPlayer(sprite)))
+        foreach (ActiveEntity<SunSprite> sprite in _map.Sprites)
         {
-            _map.Player.Tile.Damage(sprite.Tile.Damage);
-            sb.AppendLine($"{sprite.Tile.Name} dealt {sprite.Tile.Damage} damage!");
-            sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");
+            if (_map.CanAttackOtherwiseStepTowardPlayer(sprite, out Point movedTo))
+            {
+                _map.Player.Tile.Damage(sprite.Tile.Damage);
+                sb.AppendLine($"{sprite.Tile.Name} dealt {sprite.Tile.Damage} damage!");
+                sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");  
+            }
+            else
+            {
+                sb.AppendLine($"{sprite.Tile.Name} moved to {movedTo}.");
+            }
         }
         
         return sb.ToString();
@@ -96,13 +108,15 @@ public class GameManager
         sb.Append($"Attacking {dirString} with {(arrow ? "arrow" : "sword")}... ");
         if (arrow)
         {
-            _map.Player.Tile.ArrowCount--;
-            if (_map.Player.Tile.ArrowCount <= 0)
-                sb.AppendLine("No arrows left!");
+            if (_map.Player.Tile.ArrowCount > 0)
+            {
+                sb.AppendLine($"Fired arrow, {_map.Player.Tile.ArrowCount - 1} arrows remaining.");
+            }
             else
-                sb.AppendLine($"{_map.Player.Tile.ArrowCount} arrows remaining.");
+                sb.AppendLine("Can't fire, out of arrows!");
         }
 
+        if (arrow && _map.Player.Tile.ArrowCount <= 0) return sb.ToString();
         ITile hit = _map.AttackWithPlayer(dir, arrow);
         switch (hit)
         {
@@ -128,15 +142,26 @@ public class GameManager
                 }
             } break;
         }
+
         return sb.ToString();
     }
 
     public string FullStep(bool attack, short dir, bool arrow)
     {
         if (_map?.Player is null) return "No active player";
+        if (_map.Player.Tile.IsDead) return "You are dead.";
+        if (!EnemiesRemain) return "You already won!";
+        
         StringBuilder sb = new();
         sb.AppendLine("===== PLAYER TURN =====");
         sb.AppendLine(PlayerAction(attack, dir, arrow));
+
+        if (!EnemiesRemain)
+        {
+            sb.AppendLine("\nYou got them all!\n=====   VICTORY   =====");
+            return sb.ToString();
+        }
+        
         sb.AppendLine("===== ENEMY  TURN =====");
         sb.AppendLine(Step());
 
@@ -146,6 +171,7 @@ public class GameManager
             sb.AppendLine("\n You died!");
             sb.AppendLine("=====  GAME OVER  =====");
         }
+        
         return sb.ToString();
     }
 
@@ -165,4 +191,7 @@ public class GameManager
     public string ShootRight() => FullStep(true, 2, true);
     public string ShootUp() => FullStep(true, 3, true);
     public string ShootLeft() => FullStep(true, 4, true);
+    
+    public int GetHealth() => _map?.Player?.Tile.Health ?? 0;
+    public int GetArrowCount() => _map?.Player?.Tile.ArrowCount ?? 0;
 }

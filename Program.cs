@@ -84,14 +84,12 @@ public static class Program
 					useBow = (Console.ReadLine()?.ToLower() ?? "") == "y";
 				}
 				Console.WriteLine(Manager.FullStep(choice == 3, direction, useBow));
-				Console.WriteLine(Manager.PrintMap());
 				if (Manager.PlayerDead)
 				{
 					break;
 				}
+				Console.WriteLine(Manager.PrintMap());
 			}
-			if (!Manager.EnemiesRemain)
-				Console.WriteLine("\nYou got them all!\n=====   VICTORY   =====");
 			Console.Write("Play again? Y/N: ");
 			string input = Console.ReadLine()?.ToLower() ?? "";
 			if (input == "n") break;

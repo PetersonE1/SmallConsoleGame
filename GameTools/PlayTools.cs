@@ -13,7 +13,7 @@ public class PlayTools
         [Description("The height of the map in units.")] int height,
         [Description("The number of rocks on the map.")] int rockCount,
         [Description("The number of goblins on the map.")] int goblinCount,
-        [Description("The number of solar sprites on the map.")] int spriteCount)
+        [Description("The number of sun sprites on the map.")] int spriteCount)
     {
         manager.CreateNewMap(width, height, rockCount, goblinCount, spriteCount);
         return manager.PrintMap();

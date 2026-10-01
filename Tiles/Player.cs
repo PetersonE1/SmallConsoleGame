@@ -14,6 +14,8 @@ public class Player : ITile
     public void Damage(int damage)
     {
         Health -= damage;
+        if (Health < 0)
+            Health = 0;
         if (Health <= 0)
             IsDead = true;
     }

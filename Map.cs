@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SmallConsoleGame.Tiles;
 using SmallConsoleGame.TileTypes;
+using Void = SmallConsoleGame.Tiles.Void;
 
 namespace SmallConsoleGame;
 
@@ -157,6 +158,7 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		};
 		target = Player.Position;
 		target.Offset(offset);
+		if (target.X >= width || target.Y >= height || target.X < 0 || target.Y < 0) return false;
 		if (_grid[target.X, target.Y] != GetGround()) return false;
 		_grid[target.X, target.Y] = GetPlayer();
 		_grid[Player.Position.X, Player.Position.Y] = GetGround();
@@ -207,8 +209,9 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		return hit;
 	}
 
-	public bool CanAttackOtherwiseStepTowardPlayer<T>(ActiveEntity<T> enemy) where T : IEnemy
+	public bool CanAttackOtherwiseStepTowardPlayer<T>(ActiveEntity<T> enemy, out Point movedTo) where T : IEnemy
 	{
+		movedTo = new Point();
 		if (Player is null) return false;
 		PathFinderOptions options = new()
 		{
@@ -240,11 +243,13 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		_grid[nextStep.X, nextStep.Y] = enemy.ReferenceId;
 		_grid[enemy.Position.X, enemy.Position.Y] = GetGround();
 		enemy.Position = nextStep;
+		movedTo = enemy.Position;
 		return false;
 	}
 
 	public ITile GetTileAtPos(Point point)
 	{
+		if (point.X < 0 || point.Y < 0 || point.X >= width || point.Y >= height) return new Void();
 		return _referenceMap[_grid[point.X, point.Y]];
 	}
 
