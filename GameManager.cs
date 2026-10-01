@@ -10,6 +10,9 @@ public class GameManager
 {
     private readonly ImmutableArray<ITile> _tileTypes = [new Ground(), new Rock(), new Player(), new Goblin(), new SunSprite()];
     private Map? _map = null;
+    
+    public bool EnemiesRemain => _map?.Goblins.Count > 0 || _map?.Sprites.Count > 0;
+    public bool PlayerDead => _map?.Player?.Tile.IsDead ?? false;
 
     public void CreateNewMap(int width, int height, int rockCount, int goblinCount, int spriteCount)
     {
@@ -101,4 +104,39 @@ public class GameManager
         }
         return sb.ToString();
     }
+
+    public string FullStep(bool attack, short dir, bool arrow)
+    {
+        if (_map?.Player is null) return "No active player";
+        StringBuilder sb = new();
+        sb.AppendLine("===== PLAYER TURN =====");
+        sb.AppendLine(PlayerAction(attack, dir, arrow));
+        sb.AppendLine("===== ENEMY  TURN =====");
+        sb.AppendLine(Step());
+
+        if (_map.Player.Tile.IsDead)
+        {
+            _map.KillPlayer();
+            sb.AppendLine("\n You died!");
+            sb.AppendLine("=====  GAME OVER  =====");
+        }
+        return sb.ToString();
+    }
+
+    public string Wait() => FullStep(false, 0, false);
+    
+    public string MoveUp() => FullStep(false, 1, false);
+    public string MoveRight() => FullStep(false, 2, false);
+    public string MoveDown() => FullStep(false, 3, false);
+    public string MoveLeft() => FullStep(false, 4, false);
+    
+    public string StabUp() => FullStep(true, 1, false);
+    public string StabRight() => FullStep(true, 2, false);
+    public string StabDown() => FullStep(true, 3, false);
+    public string StabLeft() => FullStep(true, 4, false);
+    
+    public string ShootUp() => FullStep(true, 1, true);
+    public string ShootRight() => FullStep(true, 2, true);
+    public string ShootDown() => FullStep(true, 3, true);
+    public string ShootLeft() => FullStep(true, 4, true);
 }

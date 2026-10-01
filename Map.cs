@@ -202,6 +202,12 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		return _referenceMap[_grid[point.X, point.Y]];
 	}
 
+	public void KillPlayer()
+	{
+		if (Player is null) return;
+		_grid[Player.Position.X, Player.Position.Y] = GetGround();
+	}
+
 	private (int x, int y) GetEmptySpace()
 	{
 		int x = RandomNumberGenerator.GetInt32(width);
