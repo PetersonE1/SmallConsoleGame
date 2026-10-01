@@ -1,5 +1,8 @@
+using System.Drawing;
 using System.Security.Cryptography;
 using System.Linq;
+using AStar;
+using AStar.Options;
 using SmallConsoleGame.Tiles;
 using SmallConsoleGame.TileTypes;
 
@@ -9,6 +12,10 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 {
 	private readonly ITile[] _referenceMap = new ITile[3 + goblinCount + spriteCount];
 	private readonly int[,] _grid = new int[width, height];
+
+	public List<ActiveEntity<Goblin>> Goblins { get; } = [];
+	public List<ActiveEntity<SunSprite>> Sprites { get; } = [];
+	public ActiveEntity<Player>? Player = null;
 
 	public void PrintMap()
 	{
@@ -62,13 +69,17 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		for (int i = 0; i < goblinCount; i++)
 		{
 			(int x, int y) = GetEmptySpace();
-			_grid[x, y] = GetGoblin(i);
+			int id = GetGoblin(i);
+			_grid[x, y] = id;
+			Goblins.Add(new ActiveEntity<Goblin>((_referenceMap[id] as Goblin)!, id, x, y));
 		}
 
 		for (int i = 0; i < spriteCount; i++)
 		{
 			(int x, int y) = GetEmptySpace();
-			_grid[x, y] = GetSunSprite(i);
+			int id = GetSunSprite(i);
+			_grid[x, y] = id;
+			Sprites.Add(new ActiveEntity<SunSprite>((_referenceMap[id] as SunSprite)!, id, x, y));
 		}
 		
 		return ValidateMap();
@@ -79,9 +90,116 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		ITile tile = _referenceMap[_grid[x, y]];
 		if (tile.IsObstacle || tile is IEnemy)
 			return false;
-		
-		_grid[x, y] = GetPlayer();
+
+		int id = GetPlayer();
+		_grid[x, y] = id;
+		Player = new ActiveEntity<Player>((_referenceMap[id] as Player)!, id, x, y);
 		return true;
+	}
+
+	public bool TryMovePlayer(short dir, out Point target)
+	{
+		target = new Point();
+		if (Player is null) return false;
+		Point offset = dir switch
+		{
+			1 => new Point( 0,  1),
+			2 => new Point( 1,  0),
+			3 => new Point( 0, -1),
+			4 => new Point(-1,  0),
+			_ => throw new ArgumentOutOfRangeException(nameof(dir), dir, "Player attempted to move off the 2D plane")
+		};
+		target = Player.Position;
+		target.Offset(offset);
+		if (_grid[target.X, target.Y] != GetGround()) return false;
+		_grid[target.X, target.Y] = GetPlayer();
+		_grid[Player.Position.X, Player.Position.Y] = GetGround();
+		Player.Position = target;
+		return true;
+	}
+
+	public ITile AttackWithPlayer(short dir, bool arrow)
+	{
+		if (Player is null) return new Ground();
+		Point offset = dir switch
+		{
+			1 => new Point( 0,  1),
+			2 => new Point( 1,  0),
+			3 => new Point( 0, -1),
+			4 => new Point(-1,  0),
+			_ => throw new ArgumentOutOfRangeException(nameof(dir), dir, "Player attempted to attack off the 2D plane")
+		};
+		Point target = Player.Position;
+		if (!arrow)
+			target.Offset(offset);
+		else
+		{
+			Player.Tile.ArrowCount--;
+			while (!GetTileAtPos(target).IsObstacle && GetTileAtPos(target) is not IEnemy)
+			{
+				target.Offset(offset);
+				if (target.X >= width || target.Y >= height || target.X < 0 || target.Y < 0)
+					break;
+			}
+		}
+		
+		ITile hit = GetTileAtPos(target);
+		if (hit is not IEnemy enemy) return hit;
+		
+		enemy.Health -= 1;
+		if (enemy.Health > 0) return hit;
+		switch (enemy)
+		{
+			case Goblin:
+				Goblins.RemoveAll(g => g.Position == target);
+				break;
+			case SunSprite:
+				Sprites.RemoveAll(s => s.Position == target);
+				break;
+		}
+		_grid[target.X, target.Y] = GetGround();
+		return hit;
+	}
+
+	public bool CanAttackOtherwiseStepTowardPlayer<T>(ActiveEntity<T> enemy) where T : IEnemy
+	{
+		if (Player is null) return false;
+		PathFinderOptions options = new()
+		{
+			PunishChangeDirection = true,
+			UseDiagonals = false
+		};
+		
+		short[,] tiles = new short[height, width];
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				ITile reference = _referenceMap[_grid[x, y]];
+				tiles[y, x] = reference.IsObstacle ? (short)0 : (short)1;
+			}
+		}
+
+		WorldGrid grid = new(tiles);
+		PathFinder pathfinder = new(grid, options);
+		Point[] path = pathfinder.FindPath(enemy.Position, Player.Position);
+		
+		if (path.Length - 1 <= enemy.Tile.Range) return true;
+
+		if (path.Length < 2) return false;
+		
+		Point nextStep = path[1];
+		if (_grid[nextStep.X, nextStep.Y] != GetGround()) return false;
+		
+		_grid[nextStep.X, nextStep.Y] = enemy.ReferenceId;
+		_grid[enemy.Position.X, enemy.Position.Y] = GetGround();
+		enemy.Position = nextStep;
+		return false;
+	}
+
+	public ITile GetTileAtPos(Point point)
+	{
+		return _referenceMap[_grid[point.X, point.Y]];
 	}
 
 	private (int x, int y) GetEmptySpace()
@@ -135,7 +253,8 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 		if (checkedValues.Contains((x, y))) return 0;
 		checkedValues.Add((x, y));
 
-		if (_referenceMap[_grid[x, y]].IsObstacle)
+		ITile tile = _referenceMap[_grid[x, y]];
+		if (tile.IsObstacle)
 			return 0;
 
 		int runningCount = 1;

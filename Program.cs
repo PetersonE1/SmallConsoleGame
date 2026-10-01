@@ -11,5 +11,7 @@ public static class Program
 		Console.WriteLine("Placing player at (0, 0)... " + (manager.PlacePlayer(0, 0) ? "Success" : "Failed"));
 		manager.PrintMap();
 		manager.PrintLegend();
+		Console.WriteLine(manager.Step());
+		manager.PrintMap();
 	}
 }

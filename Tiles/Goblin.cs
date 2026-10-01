@@ -9,5 +9,5 @@ public class Goblin : IEnemy
     public bool IsObstacle => false;
     public int Range => 1;
     public int Damage => 1;
-    public int Health => 1;
+    public int Health { get; set; } = 1;
 }

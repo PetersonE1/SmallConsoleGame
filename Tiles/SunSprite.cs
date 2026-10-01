@@ -9,5 +9,5 @@ public class SunSprite : IEnemy
     public bool IsObstacle => false;
     public int Range => 5;
     public int Damage => 2;
-    public int Health => 1;
+    public int Health { get; set; } = 1;
 }
