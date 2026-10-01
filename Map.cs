@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Security.Cryptography;
 using System.Linq;
+using System.Text;
 using AStar;
 using AStar.Options;
 using SmallConsoleGame.Tiles;
@@ -17,16 +18,19 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 	public List<ActiveEntity<SunSprite>> Sprites { get; } = [];
 	public ActiveEntity<Player>? Player = null;
 
-	public void PrintMap()
+	public string PrintMap()
 	{
+		StringBuilder sb = new();
 		for (int y = 0; y < height; y++)
 		{
 			for (int x = 0; x < width; x++)
 			{
-				Console.Write(_referenceMap[_grid[x,y]].Char);
+				sb.Append(_referenceMap[_grid[x,y]].Char);
 			}
-			Console.WriteLine();
+
+			sb.AppendLine();
 		}
+		return sb.ToString();
 	}
 
 	public Map(int width, int height, int rockCount, int goblinCount, int spriteCount, int maxGenerationAttempts = 10)

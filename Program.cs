@@ -1,4 +1,6 @@
-﻿namespace SmallConsoleGame;
+﻿using ModelContextProtocol.Server;
+
+namespace SmallConsoleGame;
 
 public static class Program
 {
@@ -42,7 +44,7 @@ public static class Program
 			Console.Write("Enter Sun Sprite count: ");
 			int spriteCount = int.Parse(Console.ReadLine() ?? "");
 			Manager.CreateNewMap(width, height, rockCount, goblinCount, spriteCount);
-			Manager.PrintMap();
+			Console.WriteLine(Manager.PrintMap());
 			Console.Write("Choose an (x, y) coordinate pair to place your character, separated by a space: ");
 			int[] coords = Console.ReadLine()?.Split(' ').Select(int.Parse).ToArray() ?? [];
 
@@ -52,7 +54,7 @@ public static class Program
 				coords = Console.ReadLine()?.Split(' ').Select(int.Parse).ToArray() ?? [];
 			}
 			
-			Manager.PrintMap();
+			Console.WriteLine(Manager.PrintMap());
 			while (Manager.EnemiesRemain)
 			{
 				Console.WriteLine("Select an action:");
@@ -63,7 +65,7 @@ public static class Program
 				if (choice == 1)
 				{
 					Manager.Wait();
-					Manager.PrintMap();
+					Console.WriteLine(Manager.PrintMap());
 					continue;
 				}
 				Console.WriteLine("Choose a direction:");
@@ -79,7 +81,7 @@ public static class Program
 					useBow = (Console.ReadLine()?.ToLower() ?? "") == "y";
 				}
 				Console.WriteLine(Manager.FullStep(choice == 3, direction, useBow));
-				Manager.PrintMap();
+				Console.WriteLine(Manager.PrintMap());
 				if (Manager.PlayerDead)
 				{
 					break;
@@ -102,11 +104,11 @@ public static class Program
 	private static void BasicTestRun()
 	{
 		Manager.CreateNewMap(5, 5, 3, 2, 1);
-		Manager.PrintMap();
+		Console.WriteLine(Manager.PrintMap());
 		Console.WriteLine("Placing player at (0, 0)... " + (Manager.PlacePlayer(0, 0) ? "Success" : "Failed"));
-		Manager.PrintMap();
-		Manager.PrintLegend();
+		Console.WriteLine(Manager.PrintMap());
+		Console.WriteLine(Manager.PrintLegend());
 		Console.WriteLine(Manager.Step());
-		Manager.PrintMap();
+		Console.WriteLine(Manager.PrintMap());
 	}
 }

@@ -19,15 +19,17 @@ public class GameManager
         _map = new Map(width, height, rockCount, goblinCount, spriteCount, 10);
     }
 
-    public void PrintMap() => _map?.PrintMap();
+    public string PrintMap() => _map?.PrintMap() ?? "";
 
     public bool PlacePlayer(int x, int y) => _map?.PlacePlayer(x, y) ?? false;
 
-    public void PrintLegend()
+    public string PrintLegend()
     {
-        Console.WriteLine("LEGEND:");
+        StringBuilder sb = new();
+        sb.AppendLine("=== LEGEND ===");
         foreach (ITile tileType in _tileTypes)
-            Console.WriteLine($"{tileType.Char} -> {tileType.Name}");
+            sb.AppendLine($"{tileType.Char} -> {tileType.Name}");
+        return sb.ToString();
     }
 
     public string Step()
