@@ -67,9 +67,9 @@ public static class Program
 					continue;
 				}
 				Console.WriteLine("Choose a direction:");
-				Console.WriteLine("1. Up");
+				Console.WriteLine("1. Down");
 				Console.WriteLine("2. Right");
-				Console.WriteLine("3. Down");
+				Console.WriteLine("3. Up");
 				Console.WriteLine("4. Left");
 				short direction = short.Parse(Console.ReadLine() ?? "");
 				bool useBow = false;

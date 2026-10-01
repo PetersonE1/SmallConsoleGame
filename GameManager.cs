@@ -40,6 +40,7 @@ public class GameManager
         {
             _map.Player.Tile.Damage(goblin.Tile.Damage);
             sb.AppendLine($"{goblin.Tile.Name} dealt {goblin.Tile.Damage} damage!");
+            sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");
         }
 
         foreach (ActiveEntity<SunSprite> sprite in _map.Sprites.Where(sprite =>
@@ -47,6 +48,7 @@ public class GameManager
         {
             _map.Player.Tile.Damage(sprite.Tile.Damage);
             sb.AppendLine($"{sprite.Tile.Name} dealt {sprite.Tile.Damage} damage!");
+            sb.AppendLine($"{_map.Player.Tile.Health} health remaining!");
         }
         
         return sb.ToString();
@@ -56,7 +58,7 @@ public class GameManager
     /// Takes a player action
     /// </summary>
     /// <param name="attack">attack if true, move if false</param>
-    /// <param name="dir">0,1,2,3,4 -> stay,up,right,down,left</param>
+    /// <param name="dir">0,1,2,3,4 -> stay,down,right,up,left</param>
     /// <param name="arrow">attack using arrow if true, sword if false, unused when moving</param>
     /// <returns>Commentary on results</returns>
     private string PlayerAction(bool attack, short dir, bool arrow)
@@ -66,9 +68,9 @@ public class GameManager
         if (dir == 0) return "Waited";
         string dirString = dir switch
         {
-            1 => "up",
+            1 => "down",
             2 => "right",
-            3 => "down",
+            3 => "up",
             4 => "left",
             _ => "unknown"
         };
@@ -84,10 +86,13 @@ public class GameManager
         }
 
         sb.Append($"Attacking {dirString} with {(arrow ? "arrow" : "sword")}... ");
-        if (arrow && _map.Player.Tile.ArrowCount <= 0)
+        if (arrow)
         {
-            sb.AppendLine("No arrows left!");
-            return sb.ToString();
+            _map.Player.Tile.ArrowCount--;
+            if (_map.Player.Tile.ArrowCount <= 0)
+                sb.AppendLine("No arrows left!");
+            else
+                sb.AppendLine($"{_map.Player.Tile.ArrowCount} arrows remaining.");
         }
 
         ITile hit = _map.AttackWithPlayer(dir, arrow);
@@ -99,7 +104,20 @@ public class GameManager
             {
                 sb.AppendLine($"hit a {enemy.Name}!");
                 if (enemy.Health <= 0)
+                {
                     sb.AppendLine($"Killed a {enemy.Name}!");
+                    switch (enemy)
+                    {
+                        case Goblin:
+                            _map.Player.Tile.ArrowCount++;
+                            sb.AppendLine("Gained an arrow!");
+                            break;
+                        case SunSprite:
+                            _map.Player.Tile.Health++;
+                            sb.AppendLine("Gained one health!");
+                            break;
+                    }
+                }
             } break;
         }
         return sb.ToString();
@@ -125,18 +143,18 @@ public class GameManager
 
     public string Wait() => FullStep(false, 0, false);
     
-    public string MoveUp() => FullStep(false, 1, false);
+    public string MoveDown() => FullStep(false, 1, false);
     public string MoveRight() => FullStep(false, 2, false);
-    public string MoveDown() => FullStep(false, 3, false);
+    public string MoveUp() => FullStep(false, 3, false);
     public string MoveLeft() => FullStep(false, 4, false);
     
-    public string StabUp() => FullStep(true, 1, false);
+    public string StabDown() => FullStep(true, 1, false);
     public string StabRight() => FullStep(true, 2, false);
-    public string StabDown() => FullStep(true, 3, false);
+    public string StabUp() => FullStep(true, 3, false);
     public string StabLeft() => FullStep(true, 4, false);
     
-    public string ShootUp() => FullStep(true, 1, true);
+    public string ShootDown() => FullStep(true, 1, true);
     public string ShootRight() => FullStep(true, 2, true);
-    public string ShootDown() => FullStep(true, 3, true);
+    public string ShootUp() => FullStep(true, 3, true);
     public string ShootLeft() => FullStep(true, 4, true);
 }

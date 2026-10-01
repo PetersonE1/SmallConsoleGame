@@ -87,6 +87,7 @@ public class Map(int width, int height, int rockCount, int goblinCount, int spri
 
 	public bool PlacePlayer(int x, int y)
 	{
+		if (x < 0 || x >= width || y < 0 || y >= height) return false;
 		ITile tile = _referenceMap[_grid[x, y]];
 		if (tile.IsObstacle || tile is IEnemy)
 			return false;
